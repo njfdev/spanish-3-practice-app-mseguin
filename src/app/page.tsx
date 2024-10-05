@@ -2,6 +2,7 @@ import { ModeToggle } from "@/components/ModeToggle";
 import QuestionView from "@/components/QuestionView";
 import { SpanishWordInfo, Tense } from "@/lib/types";
 import { parse } from "csv-parse";
+import { ExternalLinkIcon } from "lucide-react";
 
 const CSV_DATA_URL =
   "https://docs.google.com/spreadsheets/u/2/d/1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo/export?format=csv&id=1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo&gid=0";
@@ -65,8 +66,18 @@ export default async function Home() {
     <main className="flex justify-center align-middle items-center">
       <div className="max-w-[48rem] w-full my-8">
         <div className="flex justify-between align-middle items-center w-full mb-2">
-          <h1 className="text-2xl font-bold">
-            Ms. Eguin&apos;s Spanish 3 Practice
+          <h1 className="text-2xl font-bold flex">
+            Ms. Eguin&apos;s Spanish 3 Practice{" "}
+            <a
+              target="_blank"
+              href={CSV_DATA_URL.split("/").slice(0, -1).join("/")}
+            >
+              <ExternalLinkIcon
+                className="ml-0.5 hover:cursor-pointer"
+                size={"1rem"}
+                strokeWidth="3px"
+              />
+            </a>
           </h1>
           <ModeToggle />
         </div>

@@ -18,6 +18,7 @@ import {
 } from "@/lib/types";
 import { useState } from "react";
 import { toast } from "sonner";
+import { XIcon } from "lucide-react";
 
 export default function QuestionCard({
   question_data,
@@ -42,6 +43,7 @@ export default function QuestionCard({
         }
   );
   const [isError, setIsError] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
 
   return (
     <Card>
@@ -66,12 +68,13 @@ export default function QuestionCard({
           }
         }}
       >
-        <CardHeader>
+        <CardHeader className="flex !flex-row items-center justify-between">
           <CardTitle>
             {"definition" in question_data
               ? `Enter the verb that means "${question_data.definition}"`
               : `Conjugate the verb "${question_data.infinitive}" in the ${question_data.name} tense`}
           </CardTitle>
+          {isError && <XIcon color="red" strokeWidth={"4px"} />}
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {Object.keys(responses).map((key, index) => {
@@ -79,6 +82,9 @@ export default function QuestionCard({
               <div key={key}>
                 <Label className="font-semibold">
                   {key[0].toUpperCase() + key.slice(1).split("_").join(" ")}
+                  {showAnswers
+                    ? ` (${question_data[key as keyof typeof question_data]})`
+                    : ""}
                 </Label>
                 <Input
                   value={responses[key as keyof typeof responses]}
@@ -87,7 +93,6 @@ export default function QuestionCard({
                       ...old,
                       [key as keyof typeof responses]: e.target.value,
                     }));
-                    setIsError(false);
                   }}
                   autoFocus={index == 0}
                 />
@@ -95,15 +100,25 @@ export default function QuestionCard({
             );
           })}
         </CardContent>
-        <CardFooter className="flex gap-2">
-          <Button disabled={isError}>Check</Button>
-          <Button
-            variant={"secondary"}
-            type="button"
-            onClick={() => onCorrect()}
-          >
-            Skip
-          </Button>
+        <CardFooter className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Button>Check</Button>
+            <Button
+              variant={"secondary"}
+              type="button"
+              onClick={() => onCorrect()}
+            >
+              Skip
+            </Button>
+          </div>
+          {isError && (
+            <Button
+              variant={"link"}
+              onClick={() => setShowAnswers((old) => !old)}
+            >
+              {showAnswers ? "Hide" : "Show"} Answers
+            </Button>
+          )}
         </CardFooter>
       </form>
     </Card>

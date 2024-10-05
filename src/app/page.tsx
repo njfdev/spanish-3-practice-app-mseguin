@@ -40,10 +40,10 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                   tu_form: data[1],
                   el_form: data[2],
                   nosotros_form: data[3],
-                  ellos_form:
-                    hint_data.length > 0
-                      ? data[4].slice(0, data[4].indexOf("(")).trim()
-                      : data[4],
+                  ellos_form: (hint_data.length > 0
+                    ? data[4].slice(0, data[4].indexOf("(")).trim()
+                    : data[4]
+                  ).trim(),
                   hint: hint_data ? hint_data : undefined,
                 };
               }),

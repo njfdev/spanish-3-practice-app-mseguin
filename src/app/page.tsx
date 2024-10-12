@@ -9,13 +9,15 @@ const CSV_DATA_URL =
 
 function getCsvData(): Promise<SpanishWordInfo[]> {
   return new Promise(async (resolve) => {
-    const csv_data = await (await fetch(CSV_DATA_URL)).text()!;
+    const csv_data = await (
+      await fetch(CSV_DATA_URL, { cache: "no-cache" })
+    ).text()!;
 
     let tenses: string[] = [];
     const spanish_data: SpanishWordInfo[] = [];
     parse(csv_data, {
-      trim: true,
-      skip_empty_lines: true,
+      trim: false,
+      skip_empty_lines: false,
     })
       // Use the readable stream api
       .on("readable", function () {
@@ -27,28 +29,32 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
             is_first = false;
             tenses = record.splice(2);
           } else {
-            spanish_data.push({
-              infinitive: record[0],
-              definition: record[1],
-              tenses: record.splice(2).map((string_data, index): Tense => {
-                const data = string_data.split(", ");
-                const hint_data = data[4].includes("(")
-                  ? data[4].slice(data[4].indexOf("("))
-                  : "";
-                return {
-                  name: tenses[index],
-                  yo_form: data[0],
-                  tu_form: data[1],
-                  el_form: data[2],
-                  nosotros_form: data[3],
-                  ellos_form: (hint_data.length > 0
-                    ? data[4].slice(0, data[4].indexOf("(")).trim()
-                    : data[4]
-                  ).trim(),
-                  hint: hint_data ? hint_data : undefined,
-                };
-              }),
-            });
+            try {
+              spanish_data.push({
+                infinitive: record[0],
+                definition: record[1],
+                tenses: record.splice(2).map((string_data, index): Tense => {
+                  const data = string_data.split(", ");
+                  const hint_data = data[4].includes("(")
+                    ? data[4].slice(data[4].indexOf("("))
+                    : "";
+                  return {
+                    name: tenses[index],
+                    yo_form: data[0],
+                    tu_form: data[1],
+                    el_form: data[2],
+                    nosotros_form: data[3],
+                    ellos_form: (hint_data.length > 0
+                      ? data[4].slice(0, data[4].indexOf("(")).trim()
+                      : data[4]
+                    ).trim(),
+                    hint: hint_data ? hint_data : undefined,
+                  };
+                }),
+              });
+            } catch {
+              console.error("Invalid Record Data: " + record);
+            }
           }
         }
       })

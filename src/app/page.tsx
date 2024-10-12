@@ -82,26 +82,38 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
   });
 }
 
+function weeksBetween(d1: Date, d2: Date) {
+  return Math.floor(
+    Math.abs(d2.getTime() - d1.getTime()) / (7 * 24 * 60 * 60 * 1000)
+  );
+}
+
 export default async function Home() {
   const spanishData = await getCsvData();
+  const quizWeek = weeksBetween(new Date(), new Date(2024, 9, 27));
 
   return (
     <main className="flex justify-center align-middle items-center">
       <div className="max-w-[48rem] w-full my-8">
-        <div className="flex justify-between align-middle items-center w-full mb-2">
-          <h1 className="text-2xl font-bold flex">
-            Ms. Eguin&apos;s Spanish 3 Practice{" "}
-            <a
-              target="_blank"
-              href={CSV_DATA_URL.split("/").slice(0, -1).join("/")}
-            >
-              <ExternalLinkIcon
-                className="ml-0.5 hover:cursor-pointer"
-                size={"1rem"}
-                strokeWidth="3px"
-              />
-            </a>
-          </h1>
+        <div className="flex justify-between align-middle w-full mb-2">
+          <div>
+            <h1 className="text-2xl font-bold flex">
+              Ms. Eguin&apos;s Spanish 3 Practice{" "}
+              <a
+                target="_blank"
+                href={CSV_DATA_URL.split("/").slice(0, -1).join("/")}
+              >
+                <ExternalLinkIcon
+                  className="ml-0.5 hover:cursor-pointer"
+                  size={"1rem"}
+                  strokeWidth="3px"
+                />
+              </a>
+            </h1>
+            <h2 className="text-lg text-muted-foreground">
+              You are studying for the week {quizWeek} tense quiz.
+            </h2>
+          </div>
           <ModeToggle />
         </div>
         <QuestionView spanishData={spanishData} />

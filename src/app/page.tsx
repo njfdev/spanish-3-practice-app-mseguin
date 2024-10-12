@@ -34,21 +34,38 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                 infinitive: record[0],
                 definition: record[1],
                 tenses: record.splice(2).map((string_data, index): Tense => {
-                  const data = string_data.split(", ");
+                  let hard_coded_data = {};
+                  // hard code preterite (2nd index) form of pedir due to
+                  // bad formatting in CSV file
+                  if (record[0].includes("pedir") && index == 1) {
+                    hard_coded_data = {
+                      nosotros_form: "pedimos",
+                      ellos_form: "pidieron",
+                      hint: "Third person changes to pid",
+                    };
+                  }
+
+                  const data = string_data.replace("o/", "ó").split(", ");
                   const hint_data = data[4].includes("(")
                     ? data[4].slice(data[4].indexOf("("))
+                    : data[4].includes("-")
+                    ? data[4].slice(data[4].indexOf("-")).trim()
                     : "";
                   return {
                     name: tenses[index],
-                    yo_form: data[0],
+                    yo_form: data[0].replace(",", ""),
                     tu_form: data[1],
                     el_form: data[2],
                     nosotros_form: data[3],
                     ellos_form: (hint_data.length > 0
-                      ? data[4].slice(0, data[4].indexOf("(")).trim()
+                      ? data[4]
+                          .slice(0, data[4].indexOf("("))
+                          .slice(0, data[4].indexOf("-"))
+                          .trim()
                       : data[4]
                     ).trim(),
                     hint: hint_data ? hint_data : undefined,
+                    ...hard_coded_data,
                   };
                 }),
               });

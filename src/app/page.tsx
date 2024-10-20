@@ -90,7 +90,7 @@ function weeksBetween(d1: Date, d2: Date) {
 
 export default async function Home() {
   const spanishData = await getCsvData();
-  const quizWeek = weeksBetween(new Date(), new Date(2024, 9, 27));
+  const quizWeek = weeksBetween(new Date(), new Date(2024, 8, 26));
 
   return (
     <main className="flex justify-center align-middle items-center">

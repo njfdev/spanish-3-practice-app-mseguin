@@ -7,6 +7,16 @@ import { ExternalLinkIcon } from "lucide-react";
 const CSV_DATA_URL =
   "https://docs.google.com/spreadsheets/u/2/d/1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo/export?format=csv&id=1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo&gid=0";
 
+function removeSubjectPronouns(phrase: string) {
+  return phrase
+    .replace("yo ", "")
+    .replace("t. ", "")
+    .replace("el ", "")
+    .replace("ella ", "")
+    .replace("nosotros ", "")
+    .replace("ellos ", "");
+}
+
 function getCsvData(): Promise<SpanishWordInfo[]> {
   return new Promise(async (resolve) => {
     const csv_data = await (
@@ -53,16 +63,17 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                     : "";
                   return {
                     name: tenses[index],
-                    yo_form: data[0].replace(",", ""),
-                    tu_form: data[1],
-                    el_form: data[2],
-                    nosotros_form: data[3],
-                    ellos_form: (hint_data.length > 0
-                      ? data[4]
-                          .slice(0, data[4].indexOf("("))
-                          .slice(0, data[4].indexOf("-"))
-                          .trim()
-                      : data[4]
+                    yo_form: removeSubjectPronouns(data[0].replace(",", "")),
+                    tu_form: removeSubjectPronouns(data[1]),
+                    el_form: removeSubjectPronouns(data[2]),
+                    nosotros_form: removeSubjectPronouns(data[3]),
+                    ellos_form: removeSubjectPronouns(
+                      hint_data.length > 0
+                        ? data[4]
+                            .slice(0, data[4].indexOf("("))
+                            .slice(0, data[4].indexOf("-"))
+                            .trim()
+                        : data[4]
                     ).trim(),
                     hint: hint_data ? hint_data : undefined,
                     ...hard_coded_data,

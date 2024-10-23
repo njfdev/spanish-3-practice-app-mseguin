@@ -7,14 +7,27 @@ import { ExternalLinkIcon } from "lucide-react";
 const CSV_DATA_URL =
   "https://docs.google.com/spreadsheets/u/2/d/1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo/export?format=csv&id=1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo&gid=0";
 
+const removePrefix = (value: string, prefix: string): string =>
+  value.startsWith(prefix) ? value.slice(prefix.length) : value;
+
 function removeSubjectPronouns(phrase: string) {
-  return phrase
-    .replace("yo ", "")
-    .replace("t. ", "")
-    .replace("el ", "")
-    .replace("ella ", "")
-    .replace("nosotros ", "")
-    .replace("ellos ", "");
+  let final = phrase.trim();
+
+  for (const prefix of [
+    "yo",
+    "tu",
+    "t.",
+    "t",
+    "ella",
+    "ellos",
+    "el",
+    "nosotros",
+    "ustedes",
+  ]) {
+    final = removePrefix(final, prefix);
+  }
+
+  return final.trim();
 }
 
 function getCsvData(): Promise<SpanishWordInfo[]> {
@@ -43,42 +56,64 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
               spanish_data.push({
                 infinitive: record[0],
                 definition: record[1],
-                tenses: record.splice(2).map((string_data, index): Tense => {
-                  let hard_coded_data = {};
-                  // hard code preterite (2nd index) form of pedir due to
-                  // bad formatting in CSV file
-                  if (record[0].includes("pedir") && index == 1) {
-                    hard_coded_data = {
-                      nosotros_form: "pedimos",
-                      ellos_form: "pidieron",
-                      hint: "Third person changes to pid",
-                    };
-                  }
+                tenses: record
+                  .splice(2)
+                  .map((string_data, index): Tense | undefined => {
+                    try {
+                      let hard_coded_data = {};
+                      // hard code preterite (2nd index) form of pedir due to
+                      // bad formatting in CSV file
+                      if (record[0].includes("pedir") && index == 1) {
+                        hard_coded_data = {
+                          nosotros_form: "pedimos",
+                          ellos_form: "pidieron",
+                          hint: "Third person changes to pid",
+                        };
+                        // hard code present perfect (4th index) form of leer
+                      } else if (record[0].includes("leer") && index == 3) {
+                        return {
+                          name: tenses[index],
+                          yo_form: "he leído",
+                          tu_form: "has leído",
+                          el_form: "ha leído",
+                          nosotros_form: "hemos leído",
+                          ellos_form: "han leído",
+                          hint: "leido gets an accent on the I",
+                        };
+                      }
 
-                  const data = string_data.replace("o/", "ó").split(", ");
-                  const hint_data = data[4].includes("(")
-                    ? data[4].slice(data[4].indexOf("("))
-                    : data[4].includes("-")
-                    ? data[4].slice(data[4].indexOf("-")).trim()
-                    : "";
-                  return {
-                    name: tenses[index],
-                    yo_form: removeSubjectPronouns(data[0].replace(",", "")),
-                    tu_form: removeSubjectPronouns(data[1]),
-                    el_form: removeSubjectPronouns(data[2]),
-                    nosotros_form: removeSubjectPronouns(data[3]),
-                    ellos_form: removeSubjectPronouns(
-                      hint_data.length > 0
-                        ? data[4]
-                            .slice(0, data[4].indexOf("("))
-                            .slice(0, data[4].indexOf("-"))
-                            .trim()
-                        : data[4]
-                    ).trim(),
-                    hint: hint_data ? hint_data : undefined,
-                    ...hard_coded_data,
-                  };
-                }),
+                      const data = string_data.replace("o/", "ó").split(", ");
+                      const hint_data = data[4].includes("(")
+                        ? data[4].slice(data[4].indexOf("("))
+                        : data[4].includes("-")
+                        ? data[4].slice(data[4].indexOf("-")).trim()
+                        : "";
+                      return {
+                        name: tenses[index],
+                        yo_form: removeSubjectPronouns(
+                          data[0].replace(",", "")
+                        ),
+                        tu_form: removeSubjectPronouns(data[1]),
+                        el_form: removeSubjectPronouns(data[2]),
+                        nosotros_form: removeSubjectPronouns(data[3]),
+                        ellos_form: removeSubjectPronouns(
+                          hint_data.length > 0
+                            ? data[4]
+                                .slice(0, data[4].indexOf("("))
+                                .slice(0, data[4].indexOf("-"))
+                                .trim()
+                            : data[4]
+                        ).trim(),
+                        hint: hint_data ? hint_data : undefined,
+                        ...hard_coded_data,
+                      };
+                    } catch {
+                      console.error(
+                        `Invalid "${tenses[index]}" tense data for verb "${record[0]}": ${string_data}`
+                      );
+                    }
+                  })
+                  .filter((n) => n) as Tense[],
               });
             } catch {
               console.error("Invalid Record Data: " + record);
@@ -101,6 +136,7 @@ function weeksBetween(d1: Date, d2: Date) {
 
 export default async function Home() {
   const spanishData = await getCsvData();
+  console.log(JSON.stringify(spanishData));
   const quizWeek = weeksBetween(new Date(), new Date(2024, 8, 26));
 
   return (

@@ -53,6 +53,8 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
             tenses = record.splice(2);
           } else {
             try {
+              if (!record[0]) continue;
+
               spanish_data.push({
                 infinitive: record[0],
                 definition: record[1],

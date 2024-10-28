@@ -9,6 +9,8 @@ const CSV_DATA_URL =
 
 const removePrefix = (value: string, prefix: string): string =>
   value.startsWith(prefix) ? value.slice(prefix.length) : value;
+const removeSuffix = (value: string, suffix: string): string =>
+  value.endsWith(suffix) ? value.slice(0, value.length - suffix.length) : value;
 
 function removeSubjectPronouns(phrase: string) {
   let final = phrase.trim();
@@ -24,7 +26,7 @@ function removeSubjectPronouns(phrase: string) {
     "nosotros",
     "ustedes",
   ]) {
-    final = removePrefix(final, prefix);
+    final = removePrefix(final, prefix + " ");
   }
 
   return final.trim();
@@ -50,7 +52,9 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
         while ((record = this.read()) !== null) {
           if (is_first) {
             is_first = false;
-            tenses = record.splice(2);
+            tenses = record
+              .splice(2)
+              .map((tense) => removeSuffix(tense, " tense"));
           } else {
             try {
               if (!record[0]) continue;

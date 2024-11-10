@@ -46,7 +46,7 @@ export default function QuestionCard({
   const [showAnswers, setShowAnswers] = useState(false);
 
   return (
-    <Card>
+    <Card className="w-screen max-w-[36rem]">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -72,7 +72,9 @@ export default function QuestionCard({
           <CardTitle>
             {"definition" in question_data
               ? `Enter the verb that means "${question_data.definition}"`
-              : `Conjugate the verb "${question_data.infinitive}" in the ${question_data.name} tense`}
+              : `Conjugate the verb "${
+                  question_data.infinitive
+                }" in the ${question_data.name.toLowerCase()} tense`}
           </CardTitle>
           {isError && <XIcon color="red" strokeWidth={"4px"} />}
         </CardHeader>

@@ -1,5 +1,7 @@
+import { AllDataView } from "@/components/AllDataView";
 import { ModeToggle } from "@/components/ModeToggle";
 import QuestionView from "@/components/QuestionView";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpanishWordInfo, Tense } from "@/lib/types";
 import { parse } from "csv-parse";
 import { ExternalLinkIcon } from "lucide-react";
@@ -36,17 +38,17 @@ const removeSuffix = (value: string, suffix: string): string =>
 function getConjugationTenseName(rawTense: string): [string, string] {
   const trimmedTense = rawTense.trim();
   if (trimmedTense == "present") {
-    return [trimmedTense, "INDICATIVE_PRESENT"];
+    return ["Present", "INDICATIVE_PRESENT"];
   } else if (trimmedTense == "preterite") {
-    return [trimmedTense, "INDICATIVE_PRETERITE"];
+    return ["Preterite", "INDICATIVE_PRETERITE"];
   } else if (trimmedTense == "imperfect") {
-    return [trimmedTense, "INDICATIVE_IMPERFECT"];
+    return ["Imperfect", "INDICATIVE_IMPERFECT"];
   } else if (trimmedTense == "present perfect") {
-    return [trimmedTense, "INDICATIVE_PERFECT"];
+    return ["Present Perfect", "INDICATIVE_PERFECT"];
   } else if (trimmedTense.includes("pluperfect")) {
-    return ["pluperfect", "INDICATIVE_PLUPERFECT"];
+    return ["Pluperfect", "INDICATIVE_PLUPERFECT"];
   } else if (trimmedTense.startsWith("future")) {
-    return ["future", "INDICATIVE_FUTURE"];
+    return ["Future", "INDICATIVE_FUTURE"];
   }
 
   throw "Unknown tense: " + trimmedTense;
@@ -76,15 +78,6 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
 
   //--------------- patches to spanish verbs conjugations ---------------//
 
-  // patch for reflexive verbs
-  if (isReflexive) {
-    tenseData.yo_form = "me " + tenseData.yo_form;
-    tenseData.tu_form = "te " + tenseData.tu_form;
-    tenseData.el_form = "se " + tenseData.el_form;
-    tenseData.nosotros_form = "nos " + tenseData.nosotros_form;
-    tenseData.ellos_form = "se " + tenseData.ellos_form;
-  }
-
   // patch for leer verb
   if (infinitive == "leer" && conjugationTenseName == "INDICATIVE_PRETERITE") {
     tenseData.tu_form = "leíste";
@@ -97,6 +90,57 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.el_form = tenseData.el_form.replace("leido", "leído");
     tenseData.nosotros_form = tenseData.nosotros_form.replace("leido", "leído");
     tenseData.ellos_form = tenseData.ellos_form.replace("leido", "leído");
+  }
+
+  // patch for jugar verb
+  if (infinitive == "jugar" && conjugationTenseName == "INDICATIVE_PRESENT") {
+    tenseData.yo_form = "juego";
+    tenseData.tu_form = "juegas";
+    tenseData.el_form = "juega";
+    tenseData.ellos_form = "juegan";
+  }
+
+  // patch for pedir
+  if (infinitive == "pedir" && conjugationTenseName == "INDICATIVE_PRESENT") {
+    tenseData.yo_form = "pido";
+    tenseData.tu_form = "pides";
+    tenseData.el_form = "pide";
+    tenseData.ellos_form = "piden";
+  }
+
+  // patch for vestirse
+  if (infinitive == "vestir" && conjugationTenseName == "INDICATIVE_PRESENT") {
+    tenseData.yo_form = "visto";
+    tenseData.tu_form = "vistes";
+    tenseData.el_form = "viste";
+    tenseData.ellos_form = "visten";
+  }
+
+  // patch for ver
+  if (infinitive == "ver" && conjugationTenseName == "INDICATIVE_IMPERFECT") {
+    tenseData.yo_form = "veía";
+    tenseData.tu_form = "veías";
+    tenseData.el_form = "veía";
+    tenseData.nosotros_form = "veíamos";
+    tenseData.ellos_form = "veían";
+  }
+
+  // patch for dormir
+  if (
+    infinitive == "dormir" &&
+    conjugationTenseName == "INDICATIVE_PRETERITE"
+  ) {
+    tenseData.el_form = "durmió";
+    tenseData.ellos_form = "durmieron";
+  }
+
+  // patch for reflexive verbs
+  if (isReflexive) {
+    tenseData.yo_form = "me " + tenseData.yo_form;
+    tenseData.tu_form = "te " + tenseData.tu_form;
+    tenseData.el_form = "se " + tenseData.el_form;
+    tenseData.nosotros_form = "nos " + tenseData.nosotros_form;
+    tenseData.ellos_form = "se " + tenseData.ellos_form;
   }
 
   return tenseData;
@@ -194,7 +238,18 @@ export default async function Home() {
           </div>
           <ModeToggle />
         </div>
-        <QuestionView spanishData={spanishData} />
+        <Tabs defaultValue="questions" className="flex flex-col items-center">
+          <TabsList className="w-max">
+            <TabsTrigger value="questions">Questions</TabsTrigger>
+            <TabsTrigger value="data">All Quiz Data</TabsTrigger>
+          </TabsList>
+          <TabsContent value="questions">
+            <QuestionView spanishData={spanishData} />
+          </TabsContent>
+          <TabsContent value="data">
+            <AllDataView spanishData={spanishData} />
+          </TabsContent>
+        </Tabs>
       </div>
     </main>
   );

@@ -3,33 +3,103 @@ import QuestionView from "@/components/QuestionView";
 import { SpanishWordInfo, Tense } from "@/lib/types";
 import { parse } from "csv-parse";
 import { ExternalLinkIcon } from "lucide-react";
+const SpanishVerbs = require("spanish-verbs");
 
 const CSV_DATA_URL =
   "https://docs.google.com/spreadsheets/u/2/d/1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo/export?format=csv&id=1Gplyg0M_jsvTBd6BNHiQM--JjVhkBrIjEqcb5zfYDXo&gid=0";
 
-const removePrefix = (value: string, prefix: string): string =>
-  value.startsWith(prefix) ? value.slice(prefix.length) : value;
+// const removePrefix = (value: string, prefix: string): string =>
+//   value.startsWith(prefix) ? value.slice(prefix.length) : value;
 const removeSuffix = (value: string, suffix: string): string =>
   value.endsWith(suffix) ? value.slice(0, value.length - suffix.length) : value;
 
-function removeSubjectPronouns(phrase: string) {
-  let final = phrase.trim();
+// function removeSubjectPronouns(phrase: string) {
+//   let final = phrase.trim();
 
-  for (const prefix of [
-    "yo",
-    "tu",
-    "t.",
-    "t",
-    "ella",
-    "ellos",
-    "el",
-    "nosotros",
-    "ustedes",
-  ]) {
-    final = removePrefix(final, prefix + " ");
+//   for (const prefix of [
+//     "yo",
+//     "tu",
+//     "t.",
+//     "t",
+//     "ella",
+//     "ellos",
+//     "el",
+//     "nosotros",
+//     "ustedes",
+//   ]) {
+//     final = removePrefix(final, prefix + " ");
+//   }
+
+//   return final.trim();
+// }
+
+function getConjugationTenseName(rawTense: string): [string, string] {
+  const trimmedTense = rawTense.trim();
+  if (trimmedTense == "present") {
+    return [trimmedTense, "INDICATIVE_PRESENT"];
+  } else if (trimmedTense == "preterite") {
+    return [trimmedTense, "INDICATIVE_PRETERITE"];
+  } else if (trimmedTense == "imperfect") {
+    return [trimmedTense, "INDICATIVE_IMPERFECT"];
+  } else if (trimmedTense == "present perfect") {
+    return [trimmedTense, "INDICATIVE_PERFECT"];
+  } else if (trimmedTense.includes("pluperfect")) {
+    return ["pluperfect", "INDICATIVE_PLUPERFECT"];
+  } else if (trimmedTense.startsWith("future")) {
+    return ["future", "INDICATIVE_FUTURE"];
   }
 
-  return final.trim();
+  throw "Unknown tense: " + trimmedTense;
+}
+
+function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
+  const infinitive = removeSuffix(raw_infinitive.trim(), "se");
+  const isReflexive = raw_infinitive.trim().endsWith("se");
+
+  const [tenseName, conjugationTenseName] = getConjugationTenseName(rawTense);
+  const tenseData: Tense = {
+    name: tenseName,
+    yo_form: SpanishVerbs.getConjugation(infinitive, conjugationTenseName, 0),
+    tu_form: SpanishVerbs.getConjugation(infinitive, conjugationTenseName, 1),
+    el_form: SpanishVerbs.getConjugation(infinitive, conjugationTenseName, 2),
+    nosotros_form: SpanishVerbs.getConjugation(
+      infinitive,
+      conjugationTenseName,
+      3
+    ),
+    ellos_form: SpanishVerbs.getConjugation(
+      infinitive,
+      conjugationTenseName,
+      5
+    ),
+  };
+
+  //--------------- patches to spanish verbs conjugations ---------------//
+
+  // patch for reflexive verbs
+  if (isReflexive) {
+    tenseData.yo_form = "me " + tenseData.yo_form;
+    tenseData.tu_form = "te " + tenseData.tu_form;
+    tenseData.el_form = "se " + tenseData.el_form;
+    tenseData.nosotros_form = "nos " + tenseData.nosotros_form;
+    tenseData.ellos_form = "se " + tenseData.ellos_form;
+  }
+
+  // patch for leer verb
+  if (infinitive == "leer" && conjugationTenseName == "INDICATIVE_PRETERITE") {
+    tenseData.tu_form = "leíste";
+    tenseData.el_form = "leyó";
+    tenseData.nosotros_form = "leímos";
+  }
+  if (infinitive == "leer") {
+    tenseData.yo_form = tenseData.yo_form.replace("leido", "leído");
+    tenseData.tu_form = tenseData.tu_form.replace("leido", "leído");
+    tenseData.el_form = tenseData.el_form.replace("leido", "leído");
+    tenseData.nosotros_form = tenseData.nosotros_form.replace("leido", "leído");
+    tenseData.ellos_form = tenseData.ellos_form.replace("leido", "leído");
+  }
+
+  return tenseData;
 }
 
 function getCsvData(): Promise<SpanishWordInfo[]> {
@@ -66,53 +136,7 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                   .splice(2)
                   .map((string_data, index): Tense | undefined => {
                     try {
-                      let hard_coded_data = {};
-                      // hard code preterite (2nd index) form of pedir due to
-                      // bad formatting in CSV file
-                      if (record[0].includes("pedir") && index == 1) {
-                        hard_coded_data = {
-                          nosotros_form: "pedimos",
-                          ellos_form: "pidieron",
-                          hint: "Third person changes to pid",
-                        };
-                        // hard code present perfect (4th index) form of leer
-                      } else if (record[0].includes("leer") && index == 3) {
-                        return {
-                          name: tenses[index],
-                          yo_form: "he leído",
-                          tu_form: "has leído",
-                          el_form: "ha leído",
-                          nosotros_form: "hemos leído",
-                          ellos_form: "han leído",
-                          hint: "leido gets an accent on the I",
-                        };
-                      }
-
-                      const data = string_data.replace("o/", "ó").split(", ");
-                      const hint_data = data[4].includes("(")
-                        ? data[4].slice(data[4].indexOf("("))
-                        : data[4].includes("-")
-                        ? data[4].slice(data[4].indexOf("-")).trim()
-                        : "";
-                      return {
-                        name: tenses[index],
-                        yo_form: removeSubjectPronouns(
-                          data[0].replace(",", "")
-                        ),
-                        tu_form: removeSubjectPronouns(data[1]),
-                        el_form: removeSubjectPronouns(data[2]),
-                        nosotros_form: removeSubjectPronouns(data[3]),
-                        ellos_form: removeSubjectPronouns(
-                          hint_data.length > 0
-                            ? data[4]
-                                .slice(0, data[4].indexOf("("))
-                                .slice(0, data[4].indexOf("-"))
-                                .trim()
-                            : data[4]
-                        ).trim(),
-                        hint: hint_data ? hint_data : undefined,
-                        ...hard_coded_data,
-                      };
+                      return getVerbTense(record[0], tenses[index]);
                     } catch {
                       console.error(
                         `Invalid "${tenses[index]}" tense data for verb "${record[0]}": ${string_data}`
@@ -142,7 +166,8 @@ function weeksBetween(d1: Date, d2: Date) {
 
 export default async function Home() {
   const spanishData = await getCsvData();
-  console.log(JSON.stringify(spanishData));
+  //console.log(JSON.stringify(spanishData));
+  //console.log(getVerbTense("leer", "pluperfect"));
   const quizWeek = weeksBetween(new Date(), new Date(2024, 8, 26));
 
   return (

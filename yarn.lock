@@ -2704,6 +2704,11 @@ source-map-js@^1.0.2, source-map-js@^1.2.1:
   resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.2.1.tgz#1ce5650fddd87abc099eda37dcff024c2667ae46"
   integrity sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==
 
+spanish-verbs@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/spanish-verbs/-/spanish-verbs-3.3.0.tgz#7709dd830297a011c7969712bc6ce1efb977bcad"
+  integrity sha512-uMDk0OyQue2RKesc606f62lxe4Av+A1VHBQ2F9xvXW6NATIPVsGaoJyllwg4KwPBxCiAfcbyh/Tx2JYPm86bZQ==
+
 stop-iteration-iterator@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/stop-iteration-iterator/-/stop-iteration-iterator-1.0.0.tgz#6a60be0b4ee757d1ed5254858ec66b10c49285e4"

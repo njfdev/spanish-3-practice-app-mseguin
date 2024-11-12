@@ -134,6 +134,12 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.ellos_form = "durmieron";
   }
 
+  // patch for pedir
+  if (infinitive == "pedir" && conjugationTenseName == "INDICATIVE_PRETERITE") {
+    tenseData.el_form = "pidió";
+    tenseData.ellos_form = "pidieron";
+  }
+
   // patch for reflexive verbs
   if (isReflexive) {
     tenseData.yo_form = "me " + tenseData.yo_form;

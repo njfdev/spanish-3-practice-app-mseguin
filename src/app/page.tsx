@@ -177,7 +177,7 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
               .map((tense) => removeSuffix(tense, " tense"));
           } else {
             try {
-              if (!record[0]) continue;
+              if (!record[0] || !record[1]) continue;
 
               spanish_data.push({
                 infinitive: record[0],

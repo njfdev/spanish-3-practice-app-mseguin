@@ -140,6 +140,15 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.ellos_form = "pidieron";
   }
 
+  // patch for venir
+  if (infinitive == "venir" && conjugationTenseName == "INDICATIVE_FUTURE") {
+    tenseData.yo_form = "vendré";
+    tenseData.tu_form = "vendrás";
+    tenseData.el_form = "vendrá";
+    tenseData.nosotros_form = "vendremos";
+    tenseData.ellos_form = "vendrán";
+  }
+
   // patch for reflexive verbs
   if (isReflexive) {
     tenseData.yo_form = "me " + tenseData.yo_form;

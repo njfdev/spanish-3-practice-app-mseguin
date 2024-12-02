@@ -49,6 +49,8 @@ function getConjugationTenseName(rawTense: string): [string, string] {
     return ["Pluperfect", "INDICATIVE_PLUPERFECT"];
   } else if (trimmedTense.startsWith("future")) {
     return ["Future", "INDICATIVE_FUTURE"];
+  } else if (trimmedTense.startsWith("conditional")) {
+    return ["Conditional", "SUBJUNCTIVE_CONDITIONAL"];
   }
 
   throw "Unknown tense: " + trimmedTense;
@@ -184,6 +186,8 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
             tenses = record
               .splice(2)
               .map((tense) => removeSuffix(tense, " tense"));
+            tenses.push("conditional");
+            console.log(tenses);
           } else {
             try {
               if (!record[0] || !record[1]) continue;
@@ -191,14 +195,38 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
               spanish_data.push({
                 infinitive: record[0],
                 definition: record[1],
-                tenses: record
+                tenses: [...tenses]
                   .splice(2)
-                  .map((string_data, index): Tense | undefined => {
+                  .map((tense_name, index): Tense | undefined => {
                     try {
-                      return getVerbTense(record[0], tenses[index]);
+                      if (tense_name == "conditional") {
+                        let conditional = getVerbTense(record[0], "future");
+                        conditional.yo_form = conditional.yo_form.replace(
+                          "é",
+                          "ía"
+                        );
+                        conditional.tu_form = conditional.tu_form.replace(
+                          "ás",
+                          "ías"
+                        );
+                        conditional.el_form = conditional.el_form.replace(
+                          "á",
+                          "ía"
+                        );
+                        conditional.nosotros_form =
+                          conditional.nosotros_form.replace("emos", "íamos");
+                        conditional.ellos_form = conditional.ellos_form.replace(
+                          "án",
+                          "ían"
+                        );
+                        conditional.name = "Conditional";
+                        return conditional;
+                      } else {
+                        return getVerbTense(record[0], tense_name);
+                      }
                     } catch {
                       console.error(
-                        `Invalid "${tenses[index]}" tense data for verb "${record[0]}": ${string_data}`
+                        `Invalid "${tense_name}" tense data for verb "${record[0]}"`
                       );
                     }
                   })
@@ -212,6 +240,7 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
       })
       // When we are done, test that the parsed records matched what expected
       .on("end", function () {
+        console.log(tenses);
         resolve(spanish_data);
       });
   });

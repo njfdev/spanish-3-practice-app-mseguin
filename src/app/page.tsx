@@ -197,10 +197,10 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                 definition: record[1],
                 tenses: [...tenses]
                   .splice(2)
-                  .map((tense_name, index): Tense | undefined => {
+                  .map((tense_name): Tense | undefined => {
                     try {
                       if (tense_name == "conditional") {
-                        let conditional = getVerbTense(record[0], "future");
+                        const conditional = getVerbTense(record[0], "future");
                         conditional.yo_form = conditional.yo_form.replace(
                           "é",
                           "ía"

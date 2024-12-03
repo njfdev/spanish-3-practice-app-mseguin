@@ -186,8 +186,6 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
             tenses = record
               .splice(2)
               .map((tense) => removeSuffix(tense, " tense"));
-            tenses.push("conditional");
-            console.log(tenses);
           } else {
             try {
               if (!record[0] || !record[1]) continue;

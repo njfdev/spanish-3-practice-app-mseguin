@@ -194,7 +194,6 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
                 infinitive: record[0],
                 definition: record[1],
                 tenses: [...tenses]
-                  .splice(2)
                   .map((tense_name): Tense | undefined => {
                     try {
                       if (tense_name == "conditional") {

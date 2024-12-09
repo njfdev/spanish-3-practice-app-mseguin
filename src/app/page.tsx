@@ -190,6 +190,9 @@ function getCsvData(): Promise<SpanishWordInfo[]> {
             try {
               if (!record[0] || !record[1]) continue;
 
+              record[0] = record[0].toLocaleLowerCase();
+              record[1] = record[1].toLocaleLowerCase();
+
               spanish_data.push({
                 infinitive: record[0],
                 definition: record[1],

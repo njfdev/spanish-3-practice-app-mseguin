@@ -51,6 +51,8 @@ function getConjugationTenseName(rawTense: string): [string, string] {
     return ["Future", "INDICATIVE_FUTURE"];
   } else if (trimmedTense.startsWith("conditional")) {
     return ["Conditional", "SUBJUNCTIVE_CONDITIONAL"];
+  } else if (trimmedTense.startsWith("subjunctive")) {
+    return ["Subjunctive", "SUBJUNCTIVE_PRESENT"];
   }
 
   throw "Unknown tense: " + trimmedTense;
@@ -117,6 +119,13 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.el_form = "viste";
     tenseData.ellos_form = "visten";
   }
+  if (infinitive == "vestir" && conjugationTenseName == "SUBJUNCTIVE_PRESENT") {
+    tenseData.yo_form = tenseData.yo_form.replace("ve", "vi");
+    tenseData.tu_form = tenseData.tu_form.replace("ve", "vi");
+    tenseData.el_form = tenseData.el_form.replace("ve", "vi");
+    tenseData.nosotros_form = tenseData.nosotros_form.replace("ve", "vi");
+    tenseData.ellos_form = tenseData.ellos_form.replace("ve", "vi");
+  }
 
   // patch for ver
   if (infinitive == "ver" && conjugationTenseName == "INDICATIVE_IMPERFECT") {
@@ -135,11 +144,21 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.el_form = "durmió";
     tenseData.ellos_form = "durmieron";
   }
+  if (infinitive == "dormir" && conjugationTenseName == "SUBJUNCTIVE_PRESENT") {
+    tenseData.nosotros_form = "durmamos";
+  }
 
   // patch for pedir
   if (infinitive == "pedir" && conjugationTenseName == "INDICATIVE_PRETERITE") {
     tenseData.el_form = "pidió";
     tenseData.ellos_form = "pidieron";
+  }
+  if (infinitive == "pedir" && conjugationTenseName == "SUBJUNCTIVE_PRESENT") {
+    tenseData.yo_form = tenseData.yo_form.replace("pe", "pi");
+    tenseData.tu_form = tenseData.tu_form.replace("pe", "pi");
+    tenseData.el_form = tenseData.el_form.replace("pe", "pi");
+    tenseData.nosotros_form = tenseData.nosotros_form.replace("pe", "pi");
+    tenseData.ellos_form = tenseData.ellos_form.replace("pe", "pi");
   }
 
   // patch for venir
@@ -149,6 +168,20 @@ function getVerbTense(raw_infinitive: string, rawTense: string): Tense {
     tenseData.el_form = "vendrá";
     tenseData.nosotros_form = "vendremos";
     tenseData.ellos_form = "vendrán";
+  }
+
+  // patch for jugar
+  if (infinitive == "jugar" && conjugationTenseName == "SUBJUNCTIVE_PRESENT") {
+    tenseData.yo_form = tenseData.yo_form.replace("ju", "jue");
+    tenseData.tu_form = tenseData.tu_form.replace("ju", "jue");
+    tenseData.el_form = tenseData.el_form.replace("ju", "jue");
+    tenseData.ellos_form = tenseData.ellos_form.replace("ju", "jue");
+  }
+
+  // patch for hacer
+  if (infinitive == "hacer" && conjugationTenseName == "SUBJUNCTIVE_PRESENT") {
+    tenseData.nosotros_form = "hagamos";
+    tenseData.ellos_form = "hagan";
   }
 
   // patch for reflexive verbs

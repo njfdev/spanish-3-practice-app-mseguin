@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import Script from "next/script";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,6 +40,12 @@ export default function RootLayout({
           <Toaster />
           {children}
         </ThemeProvider>
+        <Script
+          defer={true}
+          async={true}
+          src="https://lytics.njf.dev/script.js"
+          data-website-id="b0ce886f-45df-441e-8cf8-35fc3d8e4fee"
+        />
       </body>
     </html>
   );

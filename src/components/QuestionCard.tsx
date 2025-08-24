@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { XIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function QuestionCard({
   question_data,
@@ -27,6 +28,9 @@ export default function QuestionCard({
   question_data: InfinitiveQuestion | ConjugateTenseQuestion;
   onCorrect: () => void;
 }) {
+  const queryParams = useSearchParams();
+  const shouldAutoFocus = queryParams.get("autofocus") !== "false";
+
   const [responses, setResponses] = useState<
     InfinitiveQuestionData | ConjugateTenseQuestionData
   >(
@@ -96,7 +100,7 @@ export default function QuestionCard({
                       [key as keyof typeof responses]: e.target.value,
                     }));
                   }}
-                  autoFocus={index == 0}
+                  autoFocus={index == 0 && shouldAutoFocus}
                 />
               </div>
             );

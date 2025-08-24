@@ -6,7 +6,7 @@ import {
   InfinitiveQuestion,
   SpanishWordInfo,
 } from "@/lib/types";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 function getRandomQuestion(
   data: SpanishWordInfo[]
@@ -42,13 +42,15 @@ export default function QuestionView({
   const [key, setKey] = useState(0);
 
   return (
-    <QuestionCard
-      question_data={questionData}
-      onCorrect={() => {
-        setQuestionData(getRandomQuestion(spanishData));
-        setKey((old) => old + 1);
-      }}
-      key={key}
-    />
+    <Suspense>
+      <QuestionCard
+        question_data={questionData}
+        onCorrect={() => {
+          setQuestionData(getRandomQuestion(spanishData));
+          setKey((old) => old + 1);
+        }}
+        key={key}
+      />
+    </Suspense>
   );
 }
